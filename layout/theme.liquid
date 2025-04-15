@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{{ page_title }}</title>
+    {{ content_for_header }}
+    {{ 'theme.css' | asset_url | stylesheet_tag }}
+  </head>
+  <body>
+    {% section 'header' %}
+    {{ content_for_layout }}
+    {% section 'footer' %}
+  </body>
+</html>
+<script src="{{ 'theme.js' | asset_url }}" defer></script>

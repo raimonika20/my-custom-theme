@@ -1,0 +1,8 @@
+{% paginate collection.products by 12 %}
+  <h1>{{ collection.title }}</h1>
+  <div class="grid">
+    {% for product in collection.products %}
+      {% render 'product-card', product: product %}
+    {% endfor %}
+  </div>
+{% endpaginate %}

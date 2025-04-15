@@ -1,0 +1,15 @@
+<h1>Your Cart</h1>
+<form action="/cart" method="post">
+  <table>
+    {% for item in cart.items %}
+      <tr>
+        <td>{{ item.product.title }}</td>
+        <td><input type="number" name="updates[]" value="{{ item.quantity }}"></td>
+        <td>{{ item.line_price | money }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+  <p>Total: {{ cart.total_price | money }}</p>
+  <button type="submit" name="update">Update Cart</button>
+  <a href="/checkout">Checkout</a>
+</form>

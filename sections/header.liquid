@@ -1,0 +1,50 @@
+<header class="site-header">
+  <div class="container">
+    <div class="header-wrapper">
+      <div class="header-left">
+        {% if settings.logo %}
+          <a href="/" class="logo-wrapper">
+            <img
+              src="{{ settings.logo | img_url: '200x' }}"
+              alt="{{ shop.name }}"
+              style="max-width: {{ settings.logo_max_width }}px;"
+            >
+          </a>
+        {% else %}
+          <a href="/" class="store-name">{{ shop.name }}</a>
+        {% endif %}
+      </div>
+
+      <nav class="header-center">
+        <ul class="main-menu">
+          {% for link in linklists['main-menu'].links %}
+            <li>
+              <a href="{{ link.url }}">{{ link.title }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+
+      <div class="header-right">
+        <form action="/search" method="get" class="search-form">
+          <input type="search" name="q" placeholder="Search..." aria-label="Search">
+          <button type="submit">
+            <span class="visually-hidden">Search</span>
+            {% render 'icon-search' %}
+          </button>
+        </form>
+
+        <a href="/cart" class="cart-link">
+          {% render 'icon-cart' %}
+          <span class="cart-count">{{ cart.item_count }}</span>
+        </a>
+      </div>
+    </div>
+
+    {% if settings.announcement_text != blank %}
+      <div class="announcement-bar">
+        <p>{{ settings.announcement_text }}</p>
+      </div>
+    {% endif %}
+  </div>
+</header>
