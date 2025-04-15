@@ -105,8 +105,86 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Add to Cart functionality
+    const handleAddToCart = () => {
+        const productForms = document.querySelectorAll('form[action="/cart/add"]');
+        
+        productForms.forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitButton = form.querySelector('[data-add-to-cart]');
+                const formMessage = form.querySelector('[data-form-message]');
+                const buttonText = submitButton.querySelector('.button-text');
+                
+                if (submitButton.classList.contains('is-loading')) return;
+                
+                // Show loading state
+                submitButton.classList.add('is-loading');
+                submitButton.disabled = true;
+                
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch('/cart/add.js', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const data = await response.json();
+                    
+                    // Update cart count with animation
+                    const cartCount = document.querySelector('.cart-count');
+                    const getCartResponse = await fetch('/cart.js');
+                    const cart = await getCartResponse.json();
+                    
+                    if (cartCount) {
+                        cartCount.textContent = cart.item_count;
+                        cartCount.classList.remove('pulse');
+                        // Trigger reflow
+                        void cartCount.offsetWidth;
+                        cartCount.classList.add('pulse');
+                    }
+                    
+                    // Show success message
+                    if (formMessage) {
+                        formMessage.textContent = 'Item added to cart!';
+                        formMessage.classList.remove('error');
+                        formMessage.classList.add('success');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    if (formMessage) {
+                        formMessage.textContent = 'Error adding item to cart. Please try again.';
+                        formMessage.classList.remove('success');
+                        formMessage.classList.add('error');
+                    }
+                } finally {
+                    // Remove loading state after a slight delay for better UX
+                    setTimeout(() => {
+                        submitButton.classList.remove('is-loading');
+                        submitButton.disabled = false;
+                    }, 600);
+                    
+                    // Hide message after 5 seconds
+                    if (formMessage) {
+                        setTimeout(() => {
+                            formMessage.classList.remove('success', 'error');
+                            formMessage.textContent = '';
+                        }, 5000);
+                    }
+                }
+            });
+        });
+    };
+
+    // Initialize add to cart functionality
+    handleAddToCart();
+
     // Variant selection
     const variantSelects = productTemplate.querySelectorAll('.select-variant');
+    const variantIdInput = productTemplate.querySelector('[data-variant-id]');
     const addToCartButton = productTemplate.querySelector('[data-add-to-cart]');
     const priceElement = productTemplate.querySelector('[data-regular-price]');
 
@@ -118,13 +196,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 priceElement.innerHTML = formatMoney(variant.price);
             }
 
+            if (variantIdInput) {
+                variantIdInput.value = variant.id;
+            }
+
             if (addToCartButton) {
                 if (variant.available) {
                     addToCartButton.removeAttribute('disabled');
-                    addToCartButton.textContent = 'Add to cart';
+                    addToCartButton.querySelector('.button-text').textContent = 'Add to cart';
                 } else {
                     addToCartButton.setAttribute('disabled', 'disabled');
-                    addToCartButton.textContent = 'Sold out';
+                    addToCartButton.querySelector('.button-text').textContent = 'Sold out';
                 }
             }
         };

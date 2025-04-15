@@ -7,9 +7,13 @@
     {{ 'theme.css' | asset_url | stylesheet_tag }}
   </head>
   <body>
-    {% section 'header' %}
-    {{ content_for_layout }}
-    {% section 'footer' %}
+    <div class="site-wrapper">
+      {% section 'header' %}
+      <main class="main-content">
+        {{ content_for_layout }}
+      </main>
+      {% section 'footer' %}
+    </div>
   </body>
 </html>
 <script src="{{ 'theme.js' | asset_url }}" defer></script>

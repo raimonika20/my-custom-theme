@@ -59,6 +59,7 @@
 
         {% form 'product', product %}
           <div class="product-form">
+            <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" data-variant-id>
             {% for option in product.options_with_values %}
               <div class="product-form__field">
                 <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
@@ -105,16 +106,17 @@
                 {% endunless %}
                 data-add-to-cart
               >
-                {% if product.available %}
-                  Add to cart
-                {% else %}
-                  Sold out
-                {% endif %}
+                <span class="button-text">
+                  {% if product.available %}
+                    Add to cart
+                  {% else %}
+                    Sold out
+                  {% endif %}
+                </span>
+                <span class="loading-spinner"></span>
               </button>
 
-              {% if section.settings.show_dynamic_checkout %}
-                {{ form | payment_button }}
-              {% endif %}
+              <div class="form-message" data-form-message></div>
             </div>
           </div>
         {% endform %}
@@ -160,12 +162,6 @@
 {
   "name": "Product",
   "settings": [
-    {
-      "type": "checkbox",
-      "id": "show_dynamic_checkout",
-      "label": "Show dynamic checkout button",
-      "default": true
-    },
     {
       "type": "checkbox",
       "id": "show_share_buttons",
