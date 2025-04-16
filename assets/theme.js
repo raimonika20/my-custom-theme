@@ -107,37 +107,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Add to Cart functionality
     const handleAddToCart = () => {
+        // This grabs all <form> elements on the page that submit to the URL /cart/add.
+        // In Shopify, this URL is used to add a product to the cart via JavaScript (AJAX).
         const productForms = document.querySelectorAll('form[action="/cart/add"]');
-        
+
         productForms.forEach(form => {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const submitButton = form.querySelector('[data-add-to-cart]');
                 const formMessage = form.querySelector('[data-form-message]');
-                const buttonText = submitButton.querySelector('.button-text');
-                
+
                 if (submitButton.classList.contains('is-loading')) return;
-                
+
                 // Show loading state
                 submitButton.classList.add('is-loading');
                 submitButton.disabled = true;
-                
+
                 try {
+                    // FormData(form) takes the form fields (like product ID, quantity, variant) and packages them up.
                     const formData = new FormData(form);
+                    // This is sent using fetch() to /cart/add.js, which is Shopify’s AJAX API for adding products to the cart.
                     const response = await fetch('/cart/add.js', {
                         method: 'POST',
                         body: formData
                     });
-                    
+
                     if (!response.ok) throw new Error('Network response was not ok');
-                    
+
                     const data = await response.json();
-                    
+
                     // Update cart count with animation
                     const cartCount = document.querySelector('.cart-count');
                     const getCartResponse = await fetch('/cart.js');
                     const cart = await getCartResponse.json();
-                    
+
                     if (cartCount) {
                         cartCount.textContent = cart.item_count;
                         cartCount.classList.remove('pulse');
@@ -145,14 +148,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         void cartCount.offsetWidth;
                         cartCount.classList.add('pulse');
                     }
-                    
+
                     // Show success message
                     if (formMessage) {
                         formMessage.textContent = 'Item added to cart!';
                         formMessage.classList.remove('error');
                         formMessage.classList.add('success');
                     }
-                    
+
                 } catch (error) {
                     console.error('Error:', error);
                     if (formMessage) {
@@ -166,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         submitButton.classList.remove('is-loading');
                         submitButton.disabled = false;
                     }, 600);
-                    
+
                     // Hide message after 5 seconds
                     if (formMessage) {
                         setTimeout(() => {

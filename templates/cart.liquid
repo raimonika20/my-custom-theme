@@ -10,6 +10,8 @@
     {% endfor %}
   </table>
   <p>Total: {{ cart.total_price | money }}</p>
+  {% comment %} When you click the "Update Cart" button,
+  it submits the form with any quantity changes you've made {% endcomment %}
   <button type="submit" name="update">Update Cart</button>
   <a href="/checkout">Checkout</a>
 </form>
