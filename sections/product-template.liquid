@@ -46,14 +46,40 @@
         {% endif %}
 
         <div class="product-price">
-          <span class="price-item price-item--regular" data-regular-price>
-            {{ product.price | money }}
-          </span>
+          {% if customer %}
+            {% assign has_discount = false %}
+            {% if customer.tags contains 'wholesale' %}
+              {% assign price = product.price | times: 0.7 %}
+              {% assign has_discount = true %}
+            {% elsif customer.tags contains 'vip' %}
+              {% assign price = product.price | times: 0.85 %}
+              {% assign has_discount = true %}
+            {% else %}
+              {% assign price = product.price %}
+            {% endif %}
 
-          {% if product.compare_at_price > product.price %}
-            <span class="price-item price-item--compare">
-              {{ product.compare_at_price | money }}
+            {% if has_discount %}
+              <span class="price-item price-item--regular" style="text-decoration: line-through;">
+                {{ product.price | money }}
+              </span>
+              <span class="price-item price-item--discount" data-regular-price>
+                {{ price | money }}
+              </span>
+              {% if customer.tags contains 'wholesale' %}
+                <span class="price-label">Wholesale Price</span>
+              {% elsif customer.tags contains 'vip' %}
+                <span class="price-label">VIP Price</span>
+              {% endif %}
+            {% else %}
+              <span class="price-item price-item--regular" data-regular-price>
+                {{ price | money }}
+              </span>
+            {% endif %}
+          {% else %}
+            <span class="price-item price-item--regular" data-regular-price>
+              {{ product.price | money }}
             </span>
+            <p class="login-prompt">Log in to see your special pricing</p>
           {% endif %}
         </div>
 

@@ -1,0 +1,93 @@
+{%- if customer -%}
+  <script>
+    window.location.href = '/account';
+  </script>
+{%- else -%}
+  <div class="customer login section-{{ section.id }}-padding">
+    <h1>{{ 'customer.login_page.title' | t }}</h1>
+    <div class="login-wrapper">
+      <div class="login-form">
+        {%- form 'customer_login', novalidate: 'novalidate' -%}
+          <h2>{{ 'customer.login_page.login' | t }}</h2>
+          {%- if form.errors -%}
+            <div class="form-message error">
+              {{ form.errors | default_errors }}
+            </div>
+          {%- endif -%}
+          <div class="field">
+            <input
+              type="email"
+              name="customer[email]"
+              id="CustomerEmail"
+              autocomplete="email"
+              autocorrect="off"
+              autocapitalize="off"
+              {% if form.errors contains 'form' %}
+                aria-invalid="true"
+              {% endif %}
+              placeholder="{{ 'customer.login_page.email' | t }}"
+            >
+            <label for="CustomerEmail">{{ 'customer.login_page.email' | t }}</label>
+          </div>
+          <div class="field">
+            <input
+              type="password"
+              name="customer[password]"
+              id="CustomerPassword"
+              autocomplete="current-password"
+              {% if form.errors contains 'form' %}
+                aria-invalid="true"
+              {% endif %}
+              placeholder="{{ 'customer.login_page.password' | t }}"
+            >
+            <label for="CustomerPassword">{{ 'customer.login_page.password' | t }}</label>
+          </div>
+          <button type="submit" class="button button--primary">
+            {{ 'customer.login_page.sign_in' | t }}
+          </button>
+          <a href="#recover" class="forgot-password">{{ 'customer.login_page.forgot_password' | t }}</a>
+        {%- endform -%}
+      </div>
+
+      <div class="register-cta">
+        <h2>{{ 'customer.login_page.new_customer' | t }}</h2>
+        <p>{{ 'customer.login_page.create_account_message' | t }}</p>
+        <a href="{{ routes.account_register_url }}" class="button button--secondary">
+          {{ 'customer.login_page.create_account' | t }}
+        </a>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Customer Login",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ]
+}
+{% endschema %}

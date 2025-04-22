@@ -8,6 +8,28 @@
       loading="lazy"
     >
     <h3>{{ product.title }}</h3>
-    <p>{{ product.price | money }}</p>
+    {% if customer %}
+      {% assign has_discount = false %}
+      {% if customer.tags contains 'wholesale' %}
+        {% assign price = product.price | times: 0.7 %}
+        {% assign has_discount = true %}
+      {% elsif customer.tags contains 'retail' %}
+        {% assign price = product.price | times: 0.85 %}
+        {% assign has_discount = true %}
+      {% else %}
+        {% assign price = product.price %}
+      {% endif %}
+
+      <div class="price">
+        {% if has_discount %}
+          <span class="price--regular">{{ product.price | money }}</span>
+          <span class="price--discount">{{ price | money }}</span>
+        {% else %}
+          <p>{{ price | money }}</p>
+        {% endif %}
+      </div>
+    {% else %}
+      <p>{{ product.price | money }}</p>
+    {% endif %}
   </a>
 </div>

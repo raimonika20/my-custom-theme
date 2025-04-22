@@ -1,17 +1,106 @@
 <h1>Your Cart</h1>
-<form action="/cart" method="post">
-  <table>
-    {% for item in cart.items %}
-      <tr>
-        <td>{{ item.product.title }}</td>
-        <td><input type="number" name="updates[]" value="{{ item.quantity }}"></td>
-        <td>{{ item.line_price | money }}</td>
-      </tr>
-    {% endfor %}
-  </table>
-  <p>Total: {{ cart.total_price | money }}</p>
-  {% comment %} When you click the "Update Cart" button,
-  it submits the form with any quantity changes you've made {% endcomment %}
-  <button type="submit" name="update">Update Cart</button>
-  <a href="/checkout">Checkout</a>
-</form>
+
+{% if cart.item_count > 0 %}
+  <form action="/cart" method="post">
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in cart.items %}
+          <tr>
+            <td>
+              <a href="{{ item.url }}">{{ item.product.title }}</a>
+              {% if item.product.has_only_default_variant == false %}
+                <p>{{ item.variant.title }}</p>
+              {% endif %}
+            </td>
+            <td>
+              {% if customer %}
+                {% assign has_discount = false %}
+                {% if customer.tags contains 'wholesale' %}
+                  {% assign price = item.original_price | times: 0.7 %}
+                  {% assign has_discount = true %}
+                {% elsif customer.tags contains 'vip' %}
+                  {% assign price = item.original_price | times: 0.85 %}
+                  {% assign has_discount = true %}
+                {% else %}
+                  {% assign price = item.original_price %}
+                {% endif %}
+
+                {% if has_discount %}
+                  <span class="price--regular">{{ item.original_price | money }}</span>
+                  <span class="price--discount">{{ price | money }}</span>
+                  {% if customer.tags contains 'wholesale' %}
+                    <div class="cart-discount-note">Wholesale Discount Applied</div>
+                  {% elsif customer.tags contains 'vip' %}
+                    <div class="cart-discount-note">VIP Discount Applied</div>
+                  {% endif %}
+                {% else %}
+                  {{ price | money }}
+                {% endif %}
+              {% else %}
+                {{ item.original_price | money }}
+              {% endif %}
+            </td>
+            <td>
+              <input type="number" name="updates[]" value="{{ item.quantity }}" min="0">
+            </td>
+            <td>
+              {% if customer %}
+                {% if customer.tags contains 'wholesale' %}
+                  {{ item.original_price | times: 0.7 | times: item.quantity | money }}
+                {% elsif customer.tags contains 'vip' %}
+                  {{ item.original_price | times: 0.85 | times: item.quantity | money }}
+                {% else %}
+                  {{ item.original_price | times: item.quantity | money }}
+                {% endif %}
+              {% else %}
+                {{ item.original_price | times: item.quantity | money }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="cart-footer">
+      <div class="cart-subtotal">
+        <span>Subtotal:</span>
+        {% if customer %}
+          {% assign subtotal = 0 %}
+          {% for item in cart.items %}
+            {% if customer.tags contains 'wholesale' %}
+              {% assign item_price = item.original_price | times: 0.7 %}
+            {% elsif customer.tags contains 'vip' %}
+              {% assign item_price = item.original_price | times: 0.85 %}
+            {% else %}
+              {% assign item_price = item.original_price %}
+            {% endif %}
+            {% assign subtotal = subtotal | plus: item_price | times: item.quantity %}
+          {% endfor %}
+          <span>{{ subtotal | money }}</span>
+        {% else %}
+          <span>{{ cart.total_price | money }}</span>
+        {% endif %}
+      </div>
+
+      <div class="cart-actions">
+        <button type="submit" name="update" class="button button--secondary">Update Cart</button>
+        <button type="submit" name="checkout" class="button button--primary">Checkout</button>
+      </div>
+
+      {% if customer == null %}
+        <p class="login-prompt">Log in to see if you qualify for special pricing!</p>
+      {% endif %}
+    </div>
+  </form>
+{% else %}
+  <p>Your cart is empty</p>
+  <a href="/collections/all" class="button button--primary">Continue Shopping</a>
+{% endif %}

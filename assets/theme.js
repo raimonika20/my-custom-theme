@@ -124,6 +124,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 submitButton.disabled = true;
 
                 try {
+
+
                     // FormData(form) takes the form fields (like product ID, quantity, variant) and packages them up.
                     const formData = new FormData(form);
                     // This is sent using fetch() to /cart/add.js, which is Shopify’s AJAX API for adding products to the cart.
@@ -250,4 +252,69 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         return (cents / 100).toLocaleString(undefined, formatOptions);
     }
+
+    // Account dropdown functionality
+    const setupAccountDropdown = () => {
+        const accountButton = document.querySelector('.account-button');
+        const customerDropdown = document.querySelector('#customer-dropdown');
+        const dropdownLinks = customerDropdown?.querySelectorAll('a');
+
+        if (accountButton && customerDropdown) {
+            // Toggle dropdown
+            accountButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isExpanded = accountButton.getAttribute('aria-expanded') === 'true';
+                toggleDropdown(!isExpanded);
+            });
+
+            // Close on outside click
+            document.addEventListener('click', (e) => {
+                if (!accountButton.contains(e.target) && !customerDropdown.contains(e.target)) {
+                    toggleDropdown(false);
+                }
+            });
+
+            // Keyboard navigation
+            accountButton.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const isExpanded = accountButton.getAttribute('aria-expanded') === 'true';
+                    toggleDropdown(!isExpanded);
+                } else if (e.key === 'Escape') {
+                    toggleDropdown(false);
+                }
+            });
+
+            // Arrow key navigation within dropdown
+            customerDropdown.addEventListener('keydown', (e) => {
+                const focusableElements = Array.from(dropdownLinks);
+                const currentIndex = focusableElements.indexOf(document.activeElement);
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const nextIndex = currentIndex < focusableElements.length - 1 ? currentIndex + 1 : 0;
+                    focusableElements[nextIndex].focus();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : focusableElements.length - 1;
+                    focusableElements[prevIndex].focus();
+                } else if (e.key === 'Escape') {
+                    toggleDropdown(false);
+                    accountButton.focus();
+                }
+            });
+        }
+
+        function toggleDropdown(show) {
+            accountButton.setAttribute('aria-expanded', show);
+            customerDropdown.hidden = !show;
+
+            if (show && dropdownLinks?.length) {
+                dropdownLinks[0].focus();
+            }
+        }
+    };
+
+    // Initialize account dropdown
+    setupAccountDropdown();
 });

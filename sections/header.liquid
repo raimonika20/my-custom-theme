@@ -34,6 +34,34 @@
           </button>
         </form>
 
+        <div class="customer-account-link">
+          <button class="account-button" aria-expanded="false" aria-controls="customer-dropdown">
+            {% render 'icon-account' %}
+            <span class="visually-hidden">Account</span>
+          </button>
+          <div id="customer-dropdown" class="customer-dropdown" hidden>
+            {% if customer %}
+              <div class="customer-info">
+                <p>Hello, {{ customer.first_name }}</p>
+                {% if customer.tags.size > 0 %}
+                  <p class="customer-tag">{{ customer.tags | first | capitalize }} Member</p>
+                {% endif %}
+              </div>
+              <ul>
+                <li><a href="{{ routes.account_url }}">My Account</a></li>
+                <li><a href="{{ routes.account_url }}#orders">My Orders</a></li>
+                <li><a href="{{ routes.account_addresses_url }}">My Addresses</a></li>
+                <li><a href="{{ routes.account_logout_url }}">Log Out</a></li>
+              </ul>
+            {% else %}
+              <ul>
+                <li><a href="{{ routes.account_login_url }}">Log In</a></li>
+                <li><a href="{{ routes.account_register_url }}">Create Account</a></li>
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
         <a href="/cart" class="cart-link">
           {% render 'icon-cart' %}
           <span class="cart-count">{{ cart.item_count }}</span>
@@ -48,3 +76,33 @@
     {% endif %}
   </div>
 </header>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": []
+}
+{% endschema %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const accountButton = document.querySelector('.account-button');
+    const customerDropdown = document.querySelector('#customer-dropdown');
+
+    if (accountButton && customerDropdown) {
+      accountButton.addEventListener('click', function () {
+        const isExpanded = accountButton.getAttribute('aria-expanded') === 'true';
+        accountButton.setAttribute('aria-expanded', !isExpanded);
+        customerDropdown.hidden = isExpanded;
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function (event) {
+        if (!accountButton.contains(event.target) && !customerDropdown.contains(event.target)) {
+          accountButton.setAttribute('aria-expanded', 'false');
+          customerDropdown.hidden = true;
+        }
+      });
+    }
+  });
+</script>
