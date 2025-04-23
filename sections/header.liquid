@@ -5,8 +5,10 @@
         {% if settings.logo %}
           <a href="/" class="logo-wrapper">
             <img
-              src="{{ settings.logo | img_url: '200x' }}"
+              src="{{ settings.logo | img_url: 'medium' }}"
               alt="{{ shop.name }}"
+              width="400"
+              height="400"
               style="max-width: {{ settings.logo_max_width }}px;"
             >
           </a>

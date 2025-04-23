@@ -1,35 +1,38 @@
 <div class="product-card">
   <a href="{{ product.url }}">
     <img
-      src="{{ product.featured_image | img_url: 'medium' }}"
+      src="{{ product.featured_image | image_url: width: 400 }}"
       alt="{{ product.title }}"
       width="400"
       height="400"
       loading="lazy"
     >
     <h3>{{ product.title }}</h3>
-    {% if customer %}
-      {% assign has_discount = false %}
-      {% if customer.tags contains 'wholesale' %}
-        {% assign price = product.price | times: 0.7 %}
-        {% assign has_discount = true %}
-      {% elsif customer.tags contains 'retail' %}
-        {% assign price = product.price | times: 0.85 %}
-        {% assign has_discount = true %}
-      {% else %}
-        {% assign price = product.price %}
-      {% endif %}
 
-      <div class="price">
-        {% if has_discount %}
-          <span class="price--regular">{{ product.price | money }}</span>
-          <span class="price--discount">{{ price | money }}</span>
-        {% else %}
-          <p>{{ price | money }}</p>
-        {% endif %}
-      </div>
-    {% else %}
-      <p>{{ product.price | money }}</p>
-    {% endif %}
+    {% capture discount_data %}{% render 'discount-calculator' with price: product.price %}{% endcapture %}
+    {% assign discount_parts = discount_data | split: '|' %}
+    {% assign has_discount = discount_parts[0] %}
+    {% assign final_price = discount_parts[1] | times: 1 %}
+    {% assign discount_type = discount_parts[2] %}
+    {% assign discount_value = discount_parts[3] | times: 1 %}
+
+    <div class="price">
+      {% if has_discount == 'true' %}
+        <span class="price--regular">{{ product.price | money }}</span>
+        <span class="price--discount">{{ final_price | money }}</span>
+        <div class="price-label">
+          {% if discount_type == 'percent' %}
+            {{ discount_value }}% off
+          {% else %}
+            {{ discount_value | money }} off
+          {% endif %}
+        </div>
+      {% else %}
+        <p>{{ product.price | money }}</p>
+        {% unless customer %}
+          <p class="login-prompt">Log in for special prices</p>
+        {% endunless %}
+      {% endif %}
+    </div>
   </a>
 </div>

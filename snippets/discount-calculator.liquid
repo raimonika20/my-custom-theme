@@ -1,0 +1,38 @@
+{%- comment -%}
+  Calculates discounted price based on customer metafields
+  Input: price (required)
+  Returns: Pipe-delimited string with format: has_discount|final_price|discount_type|discount_value
+  Usage:
+  {% capture discount_data %}{% render 'discount-calculator' with price: product.price %}{% endcapture %}
+  {% assign discount_parts = discount_data | split: '|' %}
+  {% assign has_discount = discount_parts[0] %}
+  {% assign final_price = discount_parts[1] | times: 1 %}
+  {% assign discount_type = discount_parts[2] %}
+  {% assign discount_value = discount_parts[3] | times: 1 %}
+{%- endcomment -%}
+
+{%- capture return_data -%}
+  {%- if customer -%}
+    {%- assign discount_type = customer.metafields.custom.discount_type.value -%}
+    {%- assign discount_value = customer.metafields.custom.discount_value.value | plus: 0 -%}
+    {%- assign numeric_price = price | times: 1.0 -%}
+    
+    {%- if discount_type != blank and discount_value > 0 -%}
+      {%- if discount_type == 'percent' -%}
+        {%- assign discount_amount = numeric_price | times: discount_value | divided_by: 100.0 -%}
+        {%- assign final_price = numeric_price | minus: discount_amount -%}
+        true|{{ final_price }}|{{ discount_type }}|{{ discount_value }}
+      {%- elsif discount_type == 'amount' or discount_type == 'fixed' or discount_type == 'perItem' -%}
+        {%- assign final_price = numeric_price | minus: discount_value -%}
+        true|{{ final_price }}|{{ discount_type }}|{{ discount_value }}
+      {%- else -%}
+        false|{{ numeric_price }}|none|0
+      {%- endif -%}
+    {%- else -%}
+      false|{{ numeric_price }}|none|0
+    {%- endif -%}
+  {%- else -%}
+    false|{{ price }}|none|0
+  {%- endif -%}
+{%- endcapture -%}
+{{- return_data | strip -}}

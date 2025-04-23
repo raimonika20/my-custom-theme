@@ -6,10 +6,10 @@
           {% for image in product.images %}
             <div class="gallery-item{% if forloop.first %} active{% endif %}" data-image-id="{{ image.id }}">
               <img
-                src="{{ image | img_url: '800x' }}"
+                src="{{ image | image_url: width: 800 }}"
                 alt="{{ image.alt | escape }}"
                 class="product-image"
-                loading="{{ forloop.first | ternary: 'eager', 'lazy' }}"
+                loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
                 width="800"
                 height="{{ 800 | divided_by: image.aspect_ratio | round }}"
               >
@@ -26,7 +26,7 @@
                 aria-label="Load image {{ forloop.index }} in gallery view"
               >
                 <img
-                  src="{{ image | img_url: '100x' }}"
+                  src="{{ image | image_url: width: 100 }}"
                   alt="{{ image.alt | escape }}"
                   loading="lazy"
                   width="100"
@@ -46,45 +46,46 @@
         {% endif %}
 
         <div class="product-price">
-          {% if customer %}
-            {% assign has_discount = false %}
-            {% if customer.tags contains 'wholesale' %}
-              {% assign price = product.price | times: 0.7 %}
-              {% assign has_discount = true %}
-            {% elsif customer.tags contains 'retail' %}
-              {% assign price = product.price | times: 0.85 %}
-              {% assign has_discount = true %}
-            {% else %}
-              {% assign price = product.price %}
-            {% endif %}
+          {% capture discount_data %}{% render 'discount-calculator' with price: product.price %}{% endcapture %}
+          {% assign discount_parts = discount_data | split: '|' %}
+          {% assign has_discount = discount_parts[0] %}
+          {% assign final_price = discount_parts[1] | times: 1 %}
+          {% assign discount_type = discount_parts[2] %}
+          {% assign discount_value = discount_parts[3] | times: 1 %}
 
-            {% if has_discount %}
-              <span class="price-item price-item--regular" style="text-decoration: line-through;">
-                {{ product.price | money }}
-              </span>
-              <span class="price-item price-item--discount" data-regular-price>
-                {{ price | money }}
-              </span>
-              {% if customer.tags contains 'wholesale' %}
-                <span class="price-label">Wholesale Price</span>
-              {% elsif customer.tags contains 'retail' %}
-                <span class="price-label">Retail Price</span>
+          {% if has_discount == 'true' %}
+            <span class="price-item price-item--regular" style="text-decoration: line-through;">
+              {{ product.price | money }}
+            </span>
+            <span class="price-item price-item--discount" data-regular-price>
+              {{ final_price | money }}
+            </span>
+            <span class="price-label">
+              {% if discount_type == 'percent' %}
+                {{ discount_value }}% off
+              {% else %}
+                {{ discount_value | money }} off
               {% endif %}
-            {% else %}
-              <span class="price-item price-item--regular" data-regular-price>
-                {{ price | money }}
-              </span>
-            {% endif %}
+            </span>
           {% else %}
             <span class="price-item price-item--regular" data-regular-price>
               {{ product.price | money }}
             </span>
+            {% unless customer %}
+              <p class="login-prompt">Log in to see your special pricing</p>
+            {% endunless %}
           {% endif %}
         </div>
 
         {% form 'product', product %}
           <div class="product-form">
             <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" data-variant-id>
+            {% if has_discount == 'true' %}
+              <input type="hidden" name="properties[_discount_type]" value="{{ discount_type }}">
+              <input type="hidden" name="properties[_discount_value]" value="{{ discount_value }}">
+              <input type="hidden" name="properties[_final_price]" value="{{ final_price }}">
+            {% endif %}
+
             {% for option in product.options_with_values %}
               <div class="product-form__field">
                 <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">

@@ -13,6 +13,13 @@
       </thead>
       <tbody>
         {% for item in cart.items %}
+          {% capture discount_data %}{% render 'discount-calculator' with price: item.original_price %}{% endcapture %}
+          {% assign discount_parts = discount_data | split: '|' %}
+          {% assign has_discount = discount_parts[0] %}
+          {% assign final_price = discount_parts[1] | times: 1 %}
+          {% assign discount_type = discount_parts[2] %}
+          {% assign discount_value = discount_parts[3] | times: 1 %}
+
           <tr>
             <td>
               <a href="{{ item.url }}">{{ item.product.title }}</a>
@@ -21,29 +28,16 @@
               {% endif %}
             </td>
             <td>
-              {% if customer %}
-                {% assign has_discount = false %}
-                {% if customer.tags contains 'wholesale' %}
-                  {% assign price = item.original_price | times: 0.7 %}
-                  {% assign has_discount = true %}
-                {% elsif customer.tags contains 'retail' %}
-                  {% assign price = item.original_price | times: 0.85 %}
-                  {% assign has_discount = true %}
-                {% else %}
-                  {% assign price = item.original_price %}
-                {% endif %}
-
-                {% if has_discount %}
-                  <span class="price--regular">{{ item.original_price | money }}</span>
-                  <span class="price--discount">{{ price | money }}</span>
-                  {% if customer.tags contains 'wholesale' %}
-                    <div class="cart-discount-note">Wholesale Discount Applied</div>
-                  {% elsif customer.tags contains 'retail' %}
-                    <div class="cart-discount-note">Retail Discount Applied</div>
+              {% if has_discount == 'true' %}
+                <span class="price--regular">{{ item.original_price | money }}</span>
+                <span class="price--discount">{{ final_price | money }}</span>
+                <div class="cart-discount-note">
+                  {% if discount_type == 'percent' %}
+                    {{ discount_value }}% off
+                  {% else %}
+                    {{ discount_value | money }} off
                   {% endif %}
-                {% else %}
-                  {{ price | money }}
-                {% endif %}
+                </div>
               {% else %}
                 {{ item.original_price | money }}
               {% endif %}
@@ -52,14 +46,8 @@
               <input type="number" name="updates[]" value="{{ item.quantity }}" min="0">
             </td>
             <td>
-              {% if customer %}
-                {% if customer.tags contains 'wholesale' %}
-                  {{ item.original_price | times: 0.7 | times: item.quantity | money }}
-                {% elsif customer.tags contains 'retail' %}
-                  {{ item.original_price | times: 0.85 | times: item.quantity | money }}
-                {% else %}
-                  {{ item.original_price | times: item.quantity | money }}
-                {% endif %}
+              {% if has_discount == 'true' %}
+                {{ final_price | times: item.quantity | money }}
               {% else %}
                 {{ item.original_price | times: item.quantity | money }}
               {% endif %}
@@ -72,22 +60,21 @@
     <div class="cart-footer">
       <div class="cart-subtotal">
         <span>Subtotal:</span>
-        {% if customer %}
-          {% assign subtotal = 0 %}
-          {% for item in cart.items %}
-            {% if customer.tags contains 'wholesale' %}
-              {% assign item_price = item.original_price | times: 0.7 %}
-            {% elsif customer.tags contains 'retail' %}
-              {% assign item_price = item.original_price | times: 0.85 %}
-            {% else %}
-              {% assign item_price = item.original_price %}
-            {% endif %}
-            {% assign subtotal = subtotal | plus: item_price | times: item.quantity %}
-          {% endfor %}
-          <span>{{ subtotal | money }}</span>
-        {% else %}
-          <span>{{ cart.total_price | money }}</span>
-        {% endif %}
+        {% assign subtotal = 0 %}
+        {% for item in cart.items %}
+          {% capture discount_data %}{% render 'discount-calculator' with price: item.original_price %}{% endcapture %}
+          {% assign discount_parts = discount_data | split: '|' %}
+          {% assign has_discount = discount_parts[0] %}
+          {% assign final_price = discount_parts[1] | times: 1 %}
+
+          {% if has_discount == 'true' %}
+            {% assign item_total = final_price | times: item.quantity %}
+          {% else %}
+            {% assign item_total = item.original_price | times: item.quantity %}
+          {% endif %}
+          {% assign subtotal = subtotal | plus: item_total %}
+        {% endfor %}
+        <span>{{ subtotal | money }}</span>
       </div>
 
       <div class="cart-actions">
