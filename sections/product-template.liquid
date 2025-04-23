@@ -51,7 +51,7 @@
             {% if customer.tags contains 'wholesale' %}
               {% assign price = product.price | times: 0.7 %}
               {% assign has_discount = true %}
-            {% elsif customer.tags contains 'vip' %}
+            {% elsif customer.tags contains 'retail' %}
               {% assign price = product.price | times: 0.85 %}
               {% assign has_discount = true %}
             {% else %}
@@ -67,8 +67,8 @@
               </span>
               {% if customer.tags contains 'wholesale' %}
                 <span class="price-label">Wholesale Price</span>
-              {% elsif customer.tags contains 'vip' %}
-                <span class="price-label">VIP Price</span>
+              {% elsif customer.tags contains 'retail' %}
+                <span class="price-label">Retail Price</span>
               {% endif %}
             {% else %}
               <span class="price-item price-item--regular" data-regular-price>
@@ -79,7 +79,6 @@
             <span class="price-item price-item--regular" data-regular-price>
               {{ product.price | money }}
             </span>
-            <p class="login-prompt">Log in to see your special pricing</p>
           {% endif %}
         </div>
 

@@ -26,7 +26,7 @@
                 {% if customer.tags contains 'wholesale' %}
                   {% assign price = item.original_price | times: 0.7 %}
                   {% assign has_discount = true %}
-                {% elsif customer.tags contains 'vip' %}
+                {% elsif customer.tags contains 'retail' %}
                   {% assign price = item.original_price | times: 0.85 %}
                   {% assign has_discount = true %}
                 {% else %}
@@ -38,8 +38,8 @@
                   <span class="price--discount">{{ price | money }}</span>
                   {% if customer.tags contains 'wholesale' %}
                     <div class="cart-discount-note">Wholesale Discount Applied</div>
-                  {% elsif customer.tags contains 'vip' %}
-                    <div class="cart-discount-note">VIP Discount Applied</div>
+                  {% elsif customer.tags contains 'retail' %}
+                    <div class="cart-discount-note">Retail Discount Applied</div>
                   {% endif %}
                 {% else %}
                   {{ price | money }}
@@ -55,7 +55,7 @@
               {% if customer %}
                 {% if customer.tags contains 'wholesale' %}
                   {{ item.original_price | times: 0.7 | times: item.quantity | money }}
-                {% elsif customer.tags contains 'vip' %}
+                {% elsif customer.tags contains 'retail' %}
                   {{ item.original_price | times: 0.85 | times: item.quantity | money }}
                 {% else %}
                   {{ item.original_price | times: item.quantity | money }}
@@ -77,7 +77,7 @@
           {% for item in cart.items %}
             {% if customer.tags contains 'wholesale' %}
               {% assign item_price = item.original_price | times: 0.7 %}
-            {% elsif customer.tags contains 'vip' %}
+            {% elsif customer.tags contains 'retail' %}
               {% assign item_price = item.original_price | times: 0.85 %}
             {% else %}
               {% assign item_price = item.original_price %}
