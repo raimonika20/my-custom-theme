@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // FormData(form) takes the form fields (like product ID, quantity, variant) and packages them up.
                     const formData = new FormData(form);
-                    // This is sent using fetch() to /cart/add.js, which is Shopify’s AJAX API for adding products to the cart.
+                    // This is sent using fetch() to /cart/add.js, which is Shopify’s AJAX API endpoint for adding products to the cart.
                     const response = await fetch('/cart/add.js', {
                         method: 'POST',
                         body: formData
